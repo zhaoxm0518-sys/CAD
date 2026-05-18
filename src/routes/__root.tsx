@@ -26,6 +26,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <title>CADAM</title>
         <link rel="icon" type="image/x-icon" href={assetUrl('adam-icon.ico')} />
         <HeadContent />
       </head>
