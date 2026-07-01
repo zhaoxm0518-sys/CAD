@@ -192,7 +192,7 @@ function ConversationEditor() {
     conversation.settings?.model ??
       (conversation.type === 'creative'
         ? 'quality'
-        : 'google/gemini-3.1-pro-preview'),
+        : 'siliconflow/deepseek-ai/DeepSeek-V4-Pro'),
   );
   const [activePreview, setActivePreview] = useState<ActivePreview>(null);
   const [parameters, setParameters] = useState<Parameter[]>([]);

@@ -1,5 +1,6 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { chatTools, type AppUIMessage, type AppTools } from '@shared/chatAi';
 import { cleanAssistantText, getParametricText } from '@shared/parametricParts';
@@ -307,11 +308,17 @@ function jsonResponse(body: unknown, status: number) {
 const THINKING_BUDGET_TOKENS = 9000;
 const PARAMETRIC_MAX_OUTPUT_TOKENS = 64000;
 
-type ChatProvider = 'anthropic' | 'google' | 'openrouter';
+type ChatProvider = 'anthropic' | 'google' | 'siliconflow' | 'openrouter';
+
+// SiliconFlow (硅基流动) exposes an OpenAI-compatible endpoint that fronts
+// DeepSeek / Qwen / GLM / Kimi. Model IDs keep their vendor prefix after the
+// "siliconflow/" tag, e.g. "siliconflow/deepseek-ai/DeepSeek-V4-Pro".
+const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
 
 function providerFor(modelId: string): ChatProvider {
   if (modelId.startsWith('anthropic/')) return 'anthropic';
   if (modelId.startsWith('google/')) return 'google';
+  if (modelId.startsWith('siliconflow/')) return 'siliconflow';
   return 'openrouter';
 }
 
@@ -332,15 +339,19 @@ function normalizedAnthropicBaseURL(): string | undefined {
   return base.endsWith('/v1') ? base : `${base}/v1`;
 }
 
+type SiliconflowProvider = ReturnType<typeof createOpenAICompatible>;
+
 type ChatProviders = {
   anthropic: () => AnthropicProvider;
   google: () => GoogleProvider;
+  siliconflow: () => SiliconflowProvider;
   openrouter: () => ReturnType<typeof createOpenRouter>;
 };
 
 function createChatProviders(): ChatProviders {
   let anthropic: AnthropicProvider | undefined;
   let google: GoogleProvider | undefined;
+  let siliconflow: SiliconflowProvider | undefined;
   let openrouter: ReturnType<typeof createOpenRouter> | undefined;
   return {
     anthropic: () => {
@@ -358,6 +369,14 @@ function createChatProviders(): ChatProviders {
         apiKey: requiredEnv('GOOGLE_API_KEY'),
       });
       return google;
+    },
+    siliconflow: () => {
+      siliconflow ??= createOpenAICompatible({
+        name: 'siliconflow',
+        apiKey: requiredEnv('SILICONFLOW_API_KEY'),
+        baseURL: SILICONFLOW_BASE_URL,
+      });
+      return siliconflow;
     },
     openrouter: () => {
       openrouter ??= createOpenRouter({
@@ -384,6 +403,15 @@ function buildChatModel(
 ): { model: LanguageModel; providerOptions?: ProviderOptions } {
   const hasCappedThinkingBudget =
     thinking && thinkingBudget !== THINKING_BUDGET_TOKENS;
+
+  if (providerFor(modelId) === 'siliconflow') {
+    // Strip only the "siliconflow/" tag; the remaining vendor-prefixed id
+    // (e.g. "deepseek-ai/DeepSeek-V4-Pro") is what SiliconFlow expects.
+    const id = modelId.slice('siliconflow/'.length);
+    return {
+      model: providers.siliconflow().chatModel(id),
+    };
+  }
 
   if (providerFor(modelId) === 'openrouter') {
     return {

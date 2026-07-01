@@ -63,7 +63,9 @@ export function PromptView() {
 
   const [type, setType] = useState<'parametric' | 'creative'>('parametric');
 
-  const [model, setModel] = useState<Model>('google/gemini-3.1-pro-preview');
+  const [model, setModel] = useState<Model>(
+    'siliconflow/deepseek-ai/DeepSeek-V4-Pro',
+  );
 
   const handleTypeChange = (newType: 'parametric' | 'creative') => {
     setType(newType);

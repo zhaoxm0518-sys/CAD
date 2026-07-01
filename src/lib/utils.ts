@@ -272,6 +272,33 @@ export const PARAMETRIC_MODELS: ModelConfig[] = [
     supportsThinking: true,
     supportsVision: false,
   },
+  {
+    id: 'siliconflow/deepseek-ai/DeepSeek-V4-Pro',
+    name: 'DeepSeek V4 Pro (硅基流动)',
+    description: 'Flagship DeepSeek via SiliconFlow — strong code, low cost',
+    provider: 'SiliconFlow',
+    supportsTools: true,
+    supportsThinking: false,
+    supportsVision: false,
+  },
+  {
+    id: 'siliconflow/deepseek-ai/DeepSeek-V3.2',
+    name: 'DeepSeek V3.2 (硅基流动)',
+    description: 'Cheapest DeepSeek option via SiliconFlow',
+    provider: 'SiliconFlow',
+    supportsTools: true,
+    supportsThinking: false,
+    supportsVision: false,
+  },
+  {
+    id: 'siliconflow/Qwen/Qwen3-Coder-30B-A3B-Instruct',
+    name: 'Qwen3 Coder (硅基流动)',
+    description: 'Alibaba Qwen coding model via SiliconFlow',
+    provider: 'SiliconFlow',
+    supportsTools: true,
+    supportsThinking: false,
+    supportsVision: false,
+  },
 ];
 
 export const CREATIVE_MODELS: ModelConfig[] = [
